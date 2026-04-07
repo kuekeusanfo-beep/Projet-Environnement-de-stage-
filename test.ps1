@@ -75,16 +75,22 @@
     function Rules ($user, $permission, $way) {
         $ACL = Get-ACL -Path $Way
         $ACL.SetAccessRuleProtection($true, $false)
-        $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $permission, "ContainerInherit, ObjectInherit", "None", "Allow")
+        if ($way.Substring(($way.Length - 3)) -eq "txt") {
+            $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $permission, "Allow")
+        }
+        else{
+            $Rule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $permission, "ContainerInherit, ObjectInherit", "None", "Allow")
+        }
         $ACL.AddAccessRule($Rule)
         Set-Acl -Path $Way -AclObject $Acl
     }
-   
+
     # Fonction qui définit les permissions des 3 personnes dans le groupe 
     function RulesOfAll ($chemin){
-            Rules -user "Marc" -permission "Fullcontrol" -way $chemin
-            Rules -user "Rodrigue" -permission "ReadAndExecute" -way $chemin
-            Rules -user "Jessica" -permission "ReadAndExecute" -way $chemin
+        Rules -user "Info" -permission "Fullcontrol" -way $chemin
+        Rules -user "Marc" -permission "Fullcontrol" -way $chemin
+        Rules -user "Rodrigue" -permission "ReadAndExecute" -way $chemin
+        Rules -user "Jessica" -permission "ReadAndExecute" -way $chemin
     }        
     
     # Application des règles (2 points)
@@ -104,6 +110,7 @@
         
         # Ici, on veut écraser les permissions présédentes
         if (Test-Path -Path "C:\Stages2026\*confidentiel.txt") {
+            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Read" -way $conf
             Rules -user "Jessica" -permission "Read" -way $conf
         
@@ -111,11 +118,13 @@
         # Application des regles selon les conditions sur les dossiers
         $solution = "C:\Stages2026\Solutions*"
         if (Test-Path -Path "C:\Stages2026\Solutions*") {
+            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Read" -way $solution
             Rules -user "Jessica" -permission "Read" -way $solution
         }
         $problem = "C:\Stages2026\Problemes*"
         if (Test-Path -Path "C:\Stages2026\Problemes*") {
+            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Write" -way $problem
             Rules -user "Jessica" -permission "Write" -way $problem
         }
@@ -182,7 +191,12 @@ foreach ($elt in $ListTests) {
     if (PathExist -test $FinalyWay) {
         Write-Host "The path that leads to $($elt) is already existed !"
     }else{
-        New-Item -Path $FinalyWay -Itemtype Directory | Out-File -Path $Result -Append
+        if ($elt.Substring(($elt.Length - 3)) -eq "txt") {
+            New-Item -Path $FinalyWay -Itemtype File | Out-File -Path $Result -Append
+        }
+        else{
+            New-Item -Path $FinalyWay -Itemtype Directory | Out-File -Path $Result -Append
+        }
         Write-Host "The path that leads to $($elt) is created "
     }
 }
