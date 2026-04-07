@@ -52,7 +52,7 @@
     # Vérifie si les utilisateurs sont déjà dans le groupe 
     function UserInGroup ($utilisateur, $NameGroup) {
         $ListMember = Get-LocalGroupMember -name $NameGroup
-        foreach ($UserGroup in $NameGroup) {
+        foreach ($UserGroup in $ListMember) {
             if ($UserGroup.name -eq $utilisateur) {
                 return $true
             }
@@ -110,7 +110,7 @@
         
         # Ici, on veut écraser les permissions présédentes
         if (Test-Path -Path "C:\Stages2026\*confidentiel.txt") {
-            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
+            RulesOfAll -chemin $conf # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Read" -way $conf
             Rules -user "Jessica" -permission "Read" -way $conf
         
@@ -118,13 +118,13 @@
         # Application des regles selon les conditions sur les dossiers
         $solution = "C:\Stages2026\Solutions*"
         if (Test-Path -Path "C:\Stages2026\Solutions*") {
-            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
+            RulesOfAll -chemin $solution # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Read" -way $solution
             Rules -user "Jessica" -permission "Read" -way $solution
         }
         $problem = "C:\Stages2026\Problemes*"
         if (Test-Path -Path "C:\Stages2026\Problemes*") {
-            RulesOfAll -chemin $bug # Pour faire l'ajout d'une permission
+            RulesOfAll -chemin $problem # Pour faire l'ajout d'une permission
             Rules -user "Rodrigue" -permission "Write" -way $problem
             Rules -user "Jessica" -permission "Write" -way $problem
         }
@@ -171,7 +171,7 @@ foreach ($Intern in $List) {
         }else{
             CreateUser -name $Intern
             # Groupe
-            if (-not(UserInGroup -utilisateur $Intern)) {
+            if (-not(UserInGroup -utilisateur $Intern -NameGroup $NameGroup)) {
                 Add-LocalGroupMember -member $Intern -name $NameGroup
                 Write-Host "The group $($NameGroup) is created !"
             }else{
